@@ -4,7 +4,7 @@ function CameraCapture() {
   const [imageData, setImageData] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-
+  const img = useRef(null)
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true   
@@ -27,7 +27,11 @@ function CameraCapture() {
  
     setImageData(dataURL);
     img.src = dataURL;
-    
+    const link = document.createElement('a');
+    link.href = dataURL;
+    link.download = 'captured_image.png';
+    link.click();
+
   };
 
   return (
