@@ -22,10 +22,12 @@ function CameraCapture() {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     canvas.getContext('2d').drawImage(video, 0, 0);   
-
+    // Convert the canvas content to a data URL (base64-encoded image)
     const dataURL = canvas.toDataURL('image/jpeg');   
  
     setImageData(dataURL);
+    img.src = dataURL;
+    
   };
 
   return (
