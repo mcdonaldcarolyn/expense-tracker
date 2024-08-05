@@ -1,10 +1,14 @@
 import React, { useState, useRef } from 'react';
+import Tesseract from 'tesseract.js';
 
 function CameraCapture() {
   const [imageData, setImageData] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const img = useRef(null)
+  const img = useRef(null);
+  //const ocrResult = document.getElementById('ocr-result');
+  const ocrResultRef = useRef(null);
+
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true   
@@ -31,6 +35,21 @@ function CameraCapture() {
     link.href = dataURL;
     link.download = 'captured_image.png';
     link.click();
+
+    Tesseract.recognize(
+        dataURL,
+        'eng',
+        {
+            logger: m => console.log(m) // Log progress data
+        }
+    ).then(({ data: { text } }) => {
+        // Display the recognized text in the OCR result div
+        ocrResultRef.textContent = text;
+        console.log('Recognized text:', text);
+    }).catch(err => {
+        console.error('Error performing OCR:', err);
+        ocrResultRef.textContent = 'Error performing OCR.';
+    });
 
   };
 
