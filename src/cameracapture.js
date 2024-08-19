@@ -20,8 +20,7 @@ function CameraCapture() {
   };
 
   const captureImage = () => {
-    const   
- video = videoRef.current;
+    const video = videoRef.current;
     const canvas = canvasRef.current;
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
@@ -35,6 +34,31 @@ function CameraCapture() {
     link.href = dataURL;
     link.download = 'captured_image.png';
     link.click();
+
+    function preprocessingImage(dataURL) {
+      const processedImageData = dataURL.getContext('2d').getImageData(0, 0, dataURL.width, dataURL.length);
+      thresholdFilter(processedImageData.data, level = 0.5);
+      return processedImageData;
+    }
+    function thresholdFilter(pixels, level) {
+      if (level === undefined) {
+        level = 0.5;
+      }
+      const thresh = Math.floor(level * 255);
+      for (let i = 0; i < pixels.length; i += 4){
+        const r = pixels[i];
+        const g = pixels[i + 1];
+        const b = pixels[i + 2];
+        const grey = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        let val;
+        if (grey >= thresh) {
+          val = 255;
+        } else {
+          val = 0
+        }
+        pixels[i] = pixels[i + 1] = pixels[i + 2] = val;
+      }
+    }
 
     Tesseract.recognize(
         dataURL,
