@@ -5,7 +5,7 @@ function CameraCapture() {
   const [imageData, setImageData] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const img = useRef(null);
+  //const img = useRef(null);
   //const ocrResult = document.getElementById('ocr-result');
   const ocrResultRef = useRef(null);
 
@@ -27,41 +27,18 @@ function CameraCapture() {
     canvas.getContext('2d').drawImage(video, 0, 0);   
     // Convert the canvas content to a data URL (base64-encoded image)
     const dataURL = canvas.toDataURL('image/jpeg');   
- 
     setImageData(dataURL);
-    img.src = dataURL;
+
+    const processedImageData = preprocessingImage(canvas);
+    
+    //img.src = dataURL;
     const link = document.createElement('a');
     link.href = dataURL;
     link.download = 'captured_image.png';
     link.click();
 
-    function preprocessingImage(dataURL) {
-      const processedImageData = dataURL.getContext('2d').getImageData(0, 0, dataURL.width, dataURL.length);
-      thresholdFilter(processedImageData.data, level = 0.5);
-      return processedImageData;
-    }
-    function thresholdFilter(pixels, level) {
-      if (level === undefined) {
-        level = 0.5;
-      }
-      const thresh = Math.floor(level * 255);
-      for (let i = 0; i < pixels.length; i += 4){
-        const r = pixels[i];
-        const g = pixels[i + 1];
-        const b = pixels[i + 2];
-        const grey = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-        let val;
-        if (grey >= thresh) {
-          val = 255;
-        } else {
-          val = 0
-        }
-        pixels[i] = pixels[i + 1] = pixels[i + 2] = val;
-      }
-    }
-
     Tesseract.recognize(
-        dataURL,
+        processedImageData,
         'eng',
         {
             logger: m => console.log(m) // Log progress data
@@ -77,6 +54,32 @@ function CameraCapture() {
 
   };
 
+    const preprocessingImage = (canvas) => {
+      //const processedImageData = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.length);
+      const context = canvas.getContext('2d');
+      const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+      thresholdFilter(imageData.data);
+      context.putImageData(imageData, 0, 0);
+      console.log("preprocessing..")
+      return canvas;
+    }
+  const thresholdFilter = (pixels, level = 0.5) => {
+    if (!pixels || !pixels.length) {
+      console.error('invalid pixels')
+      return;
+    }
+    const thresh = Math.floor(level * 255);
+    for (let i = 0; i < pixels.length; i += 4) {
+      const r = pixels[i];
+      const g = pixels[i + 1];
+      const b = pixels[i + 2];
+      const grey = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      const val = grey >= thresh ? 255 : 0;
+      pixels[i] = pixels[i + 1] = pixels[i + 2] = val;
+    }
+  };
+
+
   return (
     <div>
       <video ref={videoRef} autoPlay />
@@ -85,6 +88,7 @@ function CameraCapture() {
 
       {imageData && <img src={imageData} alt="Captured" />}
       <canvas ref={canvasRef} style={{ display: 'none' }} /> 
+      <div ref={ocrResultRef}>OCR results here </div>
     </div>
   );
 }
