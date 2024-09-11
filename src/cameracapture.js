@@ -3,11 +3,17 @@ import Tesseract from 'tesseract.js';
 
 function CameraCapture() {
   const [imageData, setImageData] = useState(null);
+  const [ocrData, setOcrData] = useState("");
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   //const img = useRef(null);
   //const ocrResult = document.getElementById('ocr-result');
   const ocrResultRef = useRef(null);
+
+  const handleImadeUpload = (e) => {
+    const file = e.target.files[0];
+    setImageData(file);
+  };
 
   const startCamera = async () => {
     try {
